@@ -24,8 +24,8 @@ The repository is served from the `gh-pages` branch:
 ```sh
 # 1. Install the repository verification public key (required for trust)
 mkdir -p /etc/apk/keys
-wget -O /etc/apk/keys/0e9e520c9ec791cf.pub \
-  https://raw.githubusercontent.com/aseracorp/snapraid-openwrt/main/keys/0e9e520c9ec791cf.pub
+wget -O /etc/apk/keys/dc721b66b4af2424.pub \
+  https://raw.githubusercontent.com/aseracorp/snapraid-openwrt/main/keys/dc721b66b4af2424.pub
 
 # 2. Add the repository (URL must end in /packages.adb and match YOUR arch)
 echo "https://aseracorp.github.io/snapraid-openwrt/aarch64_cortex-a72/packages.adb" \
