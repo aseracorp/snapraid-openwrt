@@ -33,6 +33,9 @@ on:
       - '.github/workflows/**'
       - 'keys/**'
 
+permissions:
+  contents: write
+
 concurrency:
   group: snapraid-openwrt-build
   cancel-in-progress: true
