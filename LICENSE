@@ -1,0 +1,9 @@
+SPDX-License-Identifier: GPL-2.0-only
+
+This OpenWrt feed (package Makefile, CI workflow, README) for SnapRAID is
+distributed under the GNU General Public License version 2.
+
+The packaged software (SnapRAID) is licensed separately under GPL-3.0-or-later,
+Copyright Andrea Mazzoleni (https://www.snapraid.it/).
+
+See https://github.com/amadvance/snapraid for upstream SnapRAID licensing.
