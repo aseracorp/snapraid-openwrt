@@ -16,13 +16,13 @@ repository**.
 | OpenWrt arch dir | CPU | Devices |
 |---|---|---|
 | `x86_64` | AMD64/Intel 64 | PCs, NAS (the natural SnapRAID home) |
-| `i486` | x86 32-bit | older/32-bit x86 PCs |
+| `i386_pentium4` | x86 32-bit | older/32-bit x86 PCs |
 | `aarch64_generic` | ARMv8-A ARM64 | armvirt, many ARM64 devices |
 | `aarch64_cortex-a53` | ARMv8-A (Cortex-A53) | MediaTek Filogic, many router SoCs |
-| `arm_cortex-a7_neon-vfpv4` | ARMv7-A hard-float | many 32-bit ARM routers/NAS |
+| `arm_cortex-a15_neon-vfpv4` | ARMv7/32-bit ARM hard-float | many ARM routers/NAS |
 | `mipsel_24kc` | MIPS32r2 little-endian | MediaTek/Lantiq routers |
-| `mips64el` | MIPS64 little-endian | Octeon devices |
-| `powerpc_8540` | PowerPC (e500) | some NAS/CPE platforms |
+| `mips64_octeonplus` | MIPS64 little-endian | Octeon routers |
+| `powerpc_8548` | PowerPC (e500) | some NAS/CPE platforms |
 
 > SnapRAID is a **backup/parity** tool for disk arrays — most useful on devices
 > with several real disks (x86 / NAS-class). On tiny router hardware it compiles
@@ -60,12 +60,13 @@ Common architecture URLs:
 | Device arch | Repo URL suffix |
 |---|---|
 | x86_64 PC/NAS | `.../snapraid-openwrt/x86_64` |
+| i686/x86 32-bit PC | `.../snapraid-openwrt/i386_pentium4` |
 | aarch64 (ARM64) | `.../snapraid-openwrt/aarch64_generic` |
-| armv7 hard-float | `.../snapraid-openwrt/arm_cortex-a7_neon-vfpv4` |
+| ARM 32-bit hard-float | `.../snapraid-openwrt/arm_cortex-a15_neon-vfpv4` |
 | MediaTek Filogic | `.../snapraid-openwrt/aarch64_cortex-a53` |
 | mips32r2 (mt7621) | `.../snapraid-openwrt/mipsel_24kc` |
-| Octeon (MIPS64) | `.../snapraid-openwrt/mips64el` |
-| PowerPC e500 | `.../snapraid-openwrt/powerpc_8540` |
+| Octeon (MIPS64) | `.../snapraid-openwrt/mips64_octeonplus` |
+| PowerPC e500 | `.../snapraid-openwrt/powerpc_8548` |
 
 ### If the package is unsigned
 
