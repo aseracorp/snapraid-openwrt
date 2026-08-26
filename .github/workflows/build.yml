@@ -64,15 +64,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sdk_target:
-          - x86/64
-          - x86/generic
-          - armsr/armv8
-          - armsr/armv7
-          - ramips/mt7621
-          - mediatek/filogic
-          - octeon/generic
-          - mpc85xx/p1010
+        include:
+          - sdk_target: x86/64
+            id: x86_64
+          - sdk_target: x86/generic
+            id: x86_generic
+          - sdk_target: armsr/armv8
+            id: armsr_armv8
+          - sdk_target: armsr/armv7
+            id: armsr_armv7
+          - sdk_target: ramips/mt7621
+            id: ramips_mt7621
+          - sdk_target: mediatek/filogic
+            id: mediatek_filogic
+          - sdk_target: octeon/generic
+            id: octeon_generic
+          - sdk_target: mpc85xx/p1010
+            id: mpc85xx_p1010
     steps:
       - name: Checkout feed
         uses: actions/checkout@v4
@@ -143,8 +151,8 @@ jobs:
       - name: Upload arch repo
         uses: actions/upload-artifact@v4
         with:
-          name: repo-${{ matrix.sdk_target }}
-          path: /tmp/stage/${{ env.ARCH }}/
+          name: repo-${{ matrix.id }}
+          path: /tmp/stage/
           if-no-files-found: error
 
   publish:
