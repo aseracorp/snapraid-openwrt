@@ -30,12 +30,22 @@ include $(INCLUDE_DIR)/autotools.mk
 CONFIGURE_ARGS += \
 	--without-blkid
 
+# SnapRAID uses 64-bit atomic operations; on 32-bit MIPS/ARM (and other archs
+# without native 64-bit atomics) these need libatomic. Linking it always is
+# harmless where native atomics exist. LIBS is placed after the object files
+# by the generated Makefile, which is what a static link of libatomic needs.
+CONFIGURE_VARS += \
+	LIBS="-latomic"
+
 define Package/snapraid
   SECTION:=utils
   CATEGORY:=Utilities
   SUBMENU:=Filesystem
   TITLE:=Disk array backup with parity protection
   URL:=https://www.snapraid.it/
+  # libatomic.so.1 is required at runtime on archs without native 64-bit
+  # atomics (e.g. 32-bit MIPS). Package the dependency so apk resolves it.
+  DEPENDS:=+libatomic
 endef
 
 define Package/snapraid/description
@@ -46,9 +56,8 @@ define Package/snapraid/description
 	of big files that rarely change.
 endef
 
-# Install the binary and the upstream English man pages (snapraid.1,
-# snapraid_log.1). The OpenWrt SDK installs man pages under usr/man/.
-# Localized man pages are excluded to keep the package small.
+# Install the binary and upstream English man pages (snapraid.1,
+# snapraid_log.1). OpenWrt SDK installs man pages under usr/man/.
 define Package/snapraid/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/snapraid $(1)/usr/bin/

@@ -135,7 +135,7 @@ jobs:
           cp "$REPO/packages.adb" "/tmp/stage/$ARCH/"
           cp "$REPO/packages.adb.sig" "/tmp/stage/$ARCH/" 2>/dev/null || true
           cp "$REPO"/*.apk "/tmp/stage/$ARCH/"
-          cp feed/keys/"$KEYID".pub "/tmp/stage/$ARCH/"
+          cp ../feed/keys/"$KEYID".pub "/tmp/stage/$ARCH/"
 
           echo "ARCH=$ARCH" >> "$GITHUB_ENV"
           ls -la "/tmp/stage/$ARCH/"
