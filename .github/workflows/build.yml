@@ -2,12 +2,17 @@
 # publishes an apk-format package repository to the `gh-pages` branch of the
 # same repository.
 #
-# On each run (daily + manual, or on push to main touching the package) it:
+# Triggered daily + on manual dispatch + on push to main touching the package.
+# Each run first checks whether upstream SnapRAID has published a NEW release
+# since the last build (compared against the `latest-version` marker on the
+# gh-pages branch). If nothing changed, the build matrix is skipped — so the
+# daily cron only costs a single lightweight HTTP check on most days. When a
+# new version is detected it:
 #   1. Resolves the latest SnapRAID version from upstream.
 #   2. Cross-compiles the package in a matrix over OpenWrt target SDKs.
 #   3. Signs + assembles an apk repository (per-architecture dir with
 #      packages.adb, its signature, the public key and the .apk) and pushes
-#      it to `gh-pages`.
+#      it to `gh-pages`, together with the `latest-version` marker.
 #
 # Users install by adding the public key + repo URL (see README.md).
 #
@@ -26,6 +31,11 @@ on:
   schedule:
     - cron: '30 3 * * *'
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rebuild even if upstream SnapRAID version is unchanged'
+        type: boolean
+        default: false
   push:
     branches: [ main ]
     paths:
@@ -46,24 +56,41 @@ env:
   APK_SIGNING_KEY: ${{ secrets.APK_SIGNING_KEY }}   # ECDSA P-256 private key (PEM, base64)
 
 jobs:
+  # Lightweight gate: resolve the latest upstream version and compare it with
+  # the version we last published (stored in `latest-version` on gh-pages).
+  # The expensive build matrix below only runs when they differ.
   version:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get.outputs.version }}
+      changed: ${{ steps.get.outputs.changed }}
     steps:
       - id: get
         run: |
           set -euo pipefail
+
+          # Latest upstream SnapRAID release.
           VER="$(curl -sL https://api.github.com/repos/amadvance/snapraid/releases/latest | jq -r '.tag_name // empty' | sed 's/^v//')"
-          if [ -z "$VER" ]; then
-            echo "::error::could not resolve upstream SnapRAID version"
-            exit 1
-          fi
+          [ -n "$VER" ] || { echo "::error::could not resolve upstream SnapRAID version"; exit 1; }
           echo "version=$VER" >> "$GITHUB_OUTPUT"
-          echo "Resolved SnapRAID version: $VER"
+          echo "Resolved latest upstream SnapRAID version: $VER"
+
+          # Version we last published. Use the contents API (not
+          # raw.githubusercontent) to avoid CDN staleness. 404 => never built yet.
+          RAW="$(curl -fsSL "https://api.github.com/repos/aseracorp/snapraid-openwrt/contents/latest-version?ref=gh-pages" 2>/dev/null || true)"
+          LAST="$(printf '%s' "$RAW" | jq -r '.content // empty' | base64 -d 2>/dev/null | tr -d '[:space:]' || true)"
+
+          if [ -n "$LAST" ] && [ "$VER" = "$LAST" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No new upstream release (${VER} already published). Skipping build."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "New version (${VER}) vs last published (${LAST:-none}). Building."
+          fi
 
   build:
     needs: version
+    if: needs.version.outputs.changed == 'true' || inputs.force == true
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -153,13 +180,25 @@ jobs:
             build-essential file libncurses-dev zlib1g-dev gawk gettext \
             libssl-dev xsltproc rsync wget unzip zstd python3 jq curl bzip2 patch
 
+      # OpenWrt SDKs are large (~200-400MB) and pinned to OPENWRT_RELEASE, so
+      # cache the tarball per target — the daily rebuild cost drops to a cache
+      # restore, and the key auto-invalidates when the release bumps.
+      - name: Cache OpenWrt SDK (${{ matrix.sdk_target }})
+        id: cache-sdk
+        uses: actions/cache@v4
+        with:
+          path: /tmp/sdk.tar.zst
+          key: openwrt-sdk-${{ env.OPENWRT_RELEASE }}-${{ matrix.sdk_target }}
+
       - name: Download & extract OpenWrt SDK (${{ matrix.sdk_target }})
         run: |
           set -euo pipefail
-          BASE="https://downloads.openwrt.org/releases/${OPENWRT_RELEASE}/targets/${{ matrix.sdk_target }}/"
-          SDK="$(curl -fsSL "$BASE" | grep -oE 'openwrt-sdk-[^"]*\.tar\.zst' | grep -v sha256 | head -1)"
-          [ -n "$SDK" ] || { echo "::error::no SDK found for SDK ${{ matrix.sdk_target }}"; exit 1; }
-          curl -fsSL "$BASE/$SDK" -o /tmp/sdk.tar.zst
+          if [ ! -f /tmp/sdk.tar.zst ]; then
+            BASE="https://downloads.openwrt.org/releases/${OPENWRT_RELEASE}/targets/${{ matrix.sdk_target }}/"
+            SDK="$(curl -fsSL "$BASE" | grep -oE 'openwrt-sdk-[^"]*\.tar\.zst' | grep -v sha256 | head -1)"
+            [ -n "$SDK" ] || { echo "ERROR: no SDK found for target ${{ matrix.sdk_target }}"; exit 1; }
+            curl -fsSL "$BASE/$SDK" -o /tmp/sdk.tar.zst
+          fi
           mkdir -p sdk
           tar --zstd -xf /tmp/sdk.tar.zst -C sdk --strip-components=1
 
@@ -167,11 +206,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p sdk/package/snapraid
-          cp -r feed/package/snapraid/Makefile sdk/package/snapraid/Makefile
+          cp feed/package/snapraid/Makefile sdk/package/snapraid/Makefile
           echo "CONFIG_PACKAGE_snapraid=y" > sdk/.config
-          # Provide the feed's ECDSA P-256 signing key so 'make package/index'
-          # embeds a signature the published public key can verify
-          # (BUILD_KEY_APK_SEC=$(TOPDIR)/private-key.pem).
           if [ -n "${APK_SIGNING_KEY:-}" ]; then
             echo "$APK_SIGNING_KEY" | base64 -d > sdk/private-key.pem
             chmod 600 sdk/private-key.pem
@@ -182,7 +218,6 @@ jobs:
           cd sdk
           make defconfig >/dev/null 2>&1
           make package/snapraid/compile 2>&1 | tail -30
-
 
       - name: Generate package index
         run: |
@@ -196,16 +231,10 @@ jobs:
           ARCH="$(ls bin/packages | head -1)"
           echo "Architecture: $ARCH"
           REPO="bin/packages/$ARCH/base"
-
-          # The index is signed during 'make package/index' with the key we
-          # placed at sdk/private-key.pem (if the secret is set).
-          # Stage minimal arch repo: index + public key + the apk
           rm -rf /tmp/stage && mkdir -p "/tmp/stage/$ARCH"
           cp "$REPO/packages.adb" "/tmp/stage/$ARCH/"
           cp "$REPO"/*.apk "/tmp/stage/$ARCH/"
-          # Publish the ECDSA public verification key (named by key id)
           cp ../feed/keys/"$KEYID".pub "/tmp/stage/$ARCH/"
-
           echo "ARCH=$ARCH" >> "$GITHUB_ENV"
           ls -la "/tmp/stage/$ARCH/"
 
@@ -217,7 +246,8 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: build
+    needs: [version, build]
+    if: needs.version.outputs.changed == 'true' || inputs.force == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout gh-pages
@@ -235,25 +265,27 @@ jobs:
         run: |
           set -euo pipefail
           cd site
-          # clear previous package dirs but keep top-level README
+          # clear previous package dirs but keep top-level README & the version marker
           for d in */; do
-            [ "$d" = "README.md" ] && continue
             case "$d" in
-              *.md|*.txt) continue ;;
+              README.md|latest-version|*.txt) continue ;;
+              */) rm -rf "$d" ;;
             esac
-            rm -rf "$d"
           done
           cd ..
           for d in pkgs/*/; do
             [ -d "$d" ] || continue
             cp -r "$d"/. site/
           done
+          # stamp the version we just published so the next cron run can
+          # detect (and skip) an unchanged upstream release
+          echo "${{ needs.version.outputs.version }}" > site/latest-version
           cd site
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if ! git diff --cached --quiet; then
-            git commit -m "Publish snapraid package repo"
+            git commit -m "Publish snapraid package repo (v${{ needs.version.outputs.version }})"
             git push
             echo "pushed"
           else
