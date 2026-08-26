@@ -182,6 +182,17 @@ jobs:
           make defconfig >/dev/null 2>&1
           make package/snapraid/compile 2>&1 | tail -30
 
+
+      - name: Debug signing key
+        run: |
+          echo "secret set: ${APK_SIGNING_KEY:+yes}"
+          if [ -f sdk/private-key.pem ]; then
+            echo "key present, size: $(wc -c < sdk/private-key.pem)"
+            ./sdk/staging_dir/host/bin/openssl ec -in sdk/private-key.pem -pubout 2>/dev/null | openssl dgst -sha256 | head -1 || true
+          else
+            echo "NO private-key.pem in sdk/"
+          fi
+
       - name: Generate package index
         run: |
           cd sdk
@@ -257,4 +268,3 @@ jobs:
           else
             echo "no changes to publish"
           fi
-# signing secret refreshed; re-verified against keys/dc721b66b4af2424.pub
