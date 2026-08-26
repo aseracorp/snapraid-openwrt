@@ -43,6 +43,7 @@ concurrency:
 env:
   OPENWRT_RELEASE: 25.12.5
   KEYID: dc721b66b4af2424        # matches keys/dc721b66b4af2424.pub (ECDSA P-256)
+  APK_SIGNING_KEY: ${{ secrets.APK_SIGNING_KEY }}   # ECDSA P-256 private key (PEM, base64)
 
 jobs:
   version:
@@ -182,16 +183,6 @@ jobs:
           make defconfig >/dev/null 2>&1
           make package/snapraid/compile 2>&1 | tail -30
 
-
-      - name: Debug signing key
-        run: |
-          echo "secret set: ${APK_SIGNING_KEY:+yes}"
-          if [ -f sdk/private-key.pem ]; then
-            echo "key present, size: $(wc -c < sdk/private-key.pem)"
-            ./sdk/staging_dir/host/bin/openssl ec -in sdk/private-key.pem -pubout 2>/dev/null | openssl dgst -sha256 | head -1 || true
-          else
-            echo "NO private-key.pem in sdk/"
-          fi
 
       - name: Generate package index
         run: |
