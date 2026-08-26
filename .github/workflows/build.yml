@@ -68,41 +68,76 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - sdk_target: x86/64                # x86_64
-          - sdk_target: x86/generic           # i386_pentium4
-          - sdk_target: x86/legacy            # i386_pentium-mmx
-          - sdk_target: armsr/armv8           # aarch64_generic
-          - sdk_target: mediatek/filogic      # aarch64_cortex-a53
-          - sdk_target: bcm27xx/bcm2711       # aarch64_cortex-a72
-          - sdk_target: bcm27xx/bcm2712       # aarch64_cortex-a76
-          - sdk_target: bcm27xx/bcm2708       # arm_arm1176jzf-s_vfp
-          - sdk_target: at91/sam9x            # arm_arm926ej-s
-          - sdk_target: ipq806x/generic       # arm_cortex-a15_neon-vfpv4
-          - sdk_target: at91/sama5            # arm_cortex-a5_vfpv4
-          - sdk_target: mediatek/mt7629       # arm_cortex-a7
-          - sdk_target: ipq40xx/generic       # arm_cortex-a7_neon-vfpv4
-          - sdk_target: at91/sama7            # arm_cortex-a7_vfpv4
-          - sdk_target: sunxi/cortexa8        # arm_cortex-a8_vfpv3
-          - sdk_target: bcm53xx/generic       # arm_cortex-a9
-          - sdk_target: zynq/generic          # arm_cortex-a9_neon
-          - sdk_target: mvebu/cortexa9        # arm_cortex-a9_vfpv3-d16
-          - sdk_target: gemini/generic        # arm_fa526
-          - sdk_target: kirkwood/generic      # arm_xscale
-          - sdk_target: ixp4xx/generic        # armeb_xscale
-          - sdk_target: loongarch64/generic   # loongarch64_generic
-          - sdk_target: malta/be64            # mips64_mips64r2
-          - sdk_target: octeon/generic        # mips64_octeonplus
-          - sdk_target: malta/le64            # mips64el_mips64r2
-          - sdk_target: ath79/generic         # mips_24kc
-          - sdk_target: bmips/bcm6328         # mips_mips32
-          - sdk_target: ramips/mt7621         # mipsel_24kc
-          - sdk_target: pistachio/generic     # mipsel_24kc_24kf
-          - sdk_target: bcm47xx/mips74k       # mipsel_74kc
-          - sdk_target: bcm47xx/generic       # mipsel_mips32
-          - sdk_target: qoriq/generic         # powerpc64_e5500
-          - sdk_target: apm821xx/nand         # powerpc_464fp
-          - sdk_target: mpc85xx/p2020         # powerpc_8548
-          - sdk_target: d1/generic            # riscv64_generic
+          - sdk_target: x86/64
+            id: x86_64
+          - sdk_target: x86/generic
+            id: x86_generic
+          - sdk_target: x86/legacy
+            id: x86_legacy
+          - sdk_target: armsr/armv8
+            id: armsr_armv8
+          - sdk_target: mediatek/filogic
+            id: mtk_filogic
+          - sdk_target: bcm27xx/bcm2711
+            id: bcm2711
+          - sdk_target: bcm27xx/bcm2712
+            id: bcm2712
+          - sdk_target: bcm27xx/bcm2708
+            id: bcm2708
+          - sdk_target: at91/sam9x
+            id: at91_sam9x
+          - sdk_target: ipq806x/generic
+            id: ipq806x
+          - sdk_target: at91/sama5
+            id: at91_sama5
+          - sdk_target: mediatek/mt7629
+            id: mt7629
+          - sdk_target: ipq40xx/generic
+            id: ipq40xx
+          - sdk_target: at91/sama7
+            id: at91_sama7
+          - sdk_target: sunxi/cortexa8
+            id: sunxi_a8
+          - sdk_target: bcm53xx/generic
+            id: bcm53xx
+          - sdk_target: zynq/generic
+            id: zynq
+          - sdk_target: mvebu/cortexa9
+            id: mvebu_a9
+          - sdk_target: gemini/generic
+            id: gemini
+          - sdk_target: kirkwood/generic
+            id: kirkwood
+          - sdk_target: ixp4xx/generic
+            id: ixp4xx
+          - sdk_target: loongarch64/generic
+            id: loongarch64
+          - sdk_target: malta/be64
+            id: malta_be64
+          - sdk_target: octeon/generic
+            id: octeon
+          - sdk_target: malta/le64
+            id: malta_le64
+          - sdk_target: ath79/generic
+            id: ath79
+          - sdk_target: bmips/bcm6328
+            id: bcm6328
+          - sdk_target: ramips/mt7621
+            id: mt7621
+          - sdk_target: pistachio/generic
+            id: pistachio
+          - sdk_target: bcm47xx/mips74k
+            id: bcm47xx_74k
+          - sdk_target: bcm47xx/generic
+            id: bcm47xx
+          - sdk_target: qoriq/generic
+            id: qoriq
+          - sdk_target: apm821xx/nand
+            id: apm821xx
+          - sdk_target: mpc85xx/p2020
+            id: mpc85xx_p2020
+          - sdk_target: d1/generic
+            id: d1
 
     steps:
       - name: Checkout feed
