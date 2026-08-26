@@ -1,45 +1,25 @@
 # SnapRAID for OpenWrt
 
-Prebuilt **[SnapRAID](https://www.snapraid.it/) 14.9** OpenWrt packages, cross-compiled
-for every major OpenWrt architecture and published automatically as an **apk package
-repository**.
+Prebuilt **[SnapRAID](https://www.snapraid.it/) 14.9** OpenWrt packages,
+cross-compiled for **every** OpenWrt architecture (release 25.12.5) and
+published automatically as an **apk package repository**.
 
-- ⚙️ Built with the official OpenWrt SDK (musl libc) — small binaries.
-- 🗂️ Packaged as an **apk** repo (OpenWrt **25.1x+**); one directory per architecture.
-- 🤖 Auto-built & re-published on every new upstream SnapRAID release (daily check).
+- ⚙️ Built with the official OpenWrt SDK (musl libc).
+- 🗂️ apk format (OpenWrt **25.1+**); one directory per architecture.
+- 🤖 Auto-built & re-published on every new upstream SnapRAID release (daily).
 - 📄 Includes the upstream English man pages (`man snapraid`).
-
----
-
-## Supported architectures
-
-| OpenWrt arch dir | CPU | Devices |
-|---|---|---|
-| `x86_64` | AMD64/Intel 64 | PCs, NAS (the natural SnapRAID home) |
-| `i386_pentium4` | x86 32-bit | older/32-bit x86 PCs |
-| `aarch64_generic` | ARMv8-A ARM64 | armvirt, many ARM64 devices |
-| `aarch64_cortex-a53` | ARMv8-A (Cortex-A53) | MediaTek Filogic, many router SoCs |
-| `arm_cortex-a15_neon-vfpv4` | ARMv7/32-bit ARM hard-float | many ARM routers/NAS |
-| `mipsel_24kc` | MIPS32r2 little-endian | MediaTek/Lantiq routers |
-| `mips64_octeonplus` | MIPS64 little-endian | Octeon routers |
-| `powerpc_8548` | PowerPC (e500) | some NAS/CPE platforms |
-
-> SnapRAID is a **backup/parity** tool for disk arrays — most useful on devices
-> with several real disks (x86 / NAS-class). On tiny router hardware it compiles
-> but you rarely have the disks for it to be worthwhile.
->
-> Each folder on the published repo is OpenWrt's **package architecture** for a
-> target. New architectures can be added by bumping the matrix in
-> `.github/workflows/build.yml`.
 
 ---
 
 ## Add the repo & trust key (OpenWrt 25.1+, apk)
 
-The repository is served from the `gh-pages` branch as
-`https://aseracorp.github.io/snapraid-openwrt/<arch>/`.
+The repository is served from the `gh-pages` branch:
+`https://aseracorp.github.io/snapraid-openwrt/<arch>/packages.adb`
 
-**One-time setup** (replace `<arch>` with your architecture from the table):
+`<arch>` is your device's OpenWrt package architecture (e.g. `aarch64_cortex-a72`,
+`x86_64`, `mipsel_24kc`). Find it with `apk arch` or from the fw-selector.
+
+**One-time setup** (replace `<arch>` with the real value):
 
 ```sh
 # 1. Install the repository verification public key (required for trust)
@@ -47,36 +27,47 @@ mkdir -p /etc/apk/keys
 wget -O /etc/apk/keys/0e9e520c9ec791cf.pub \
   https://raw.githubusercontent.com/aseracorp/snapraid-openwrt/main/keys/0e9e520c9ec791cf.pub
 
-# 2. Add the repository for your architecture, e.g. x86_64
-echo "https://aseracorp.github.io/snapraid-openwrt/x86_64" >> /etc/apk/repositories
+# 2. Add the repository (URL must end in /packages.adb and match YOUR arch)
+echo "https://aseracorp.github.io/snapraid-openwrt/aarch64_cortex-a72/packages.adb" \
+  > /etc/apk/repositories.d/customfeeds.list
 
 # 3. Refresh the index and install
 apk update
 apk add snapraid
 ```
 
-Common architecture URLs:
+> **Important:** include the trailing `/packages.adb` and use your exact
+> architecture. If you point apk at a bare directory it falls back to
+> Alpine's `APKINDEX.tar.gz` layout against the wrong `/<arch>/` path and
+> fails. The URL must name the index directly — this matches how OpenWrt's
+> own feeds are configured (`.../packages/<arch>/base/packages.adb`).
 
-| Device arch | Repo URL suffix |
-|---|---|
-| x86_64 PC/NAS | `.../snapraid-openwrt/x86_64` |
-| i686/x86 32-bit PC | `.../snapraid-openwrt/i386_pentium4` |
-| aarch64 (ARM64) | `.../snapraid-openwrt/aarch64_generic` |
-| ARM 32-bit hard-float | `.../snapraid-openwrt/arm_cortex-a15_neon-vfpv4` |
-| MediaTek Filogic | `.../snapraid-openwrt/aarch64_cortex-a53` |
-| mips32r2 (mt7621) | `.../snapraid-openwrt/mipsel_24kc` |
-| Octeon (MIPS64) | `.../snapraid-openwrt/mips64_octeonplus` |
-| PowerPC e500 | `.../snapraid-openwrt/powerpc_8548` |
+---
 
-### If the package is unsigned
+## All published architectures
 
-If `apk` reports `UNTRUSTED signature`, the publishing signing key wasn't
-configured for this release. Install with trust disabled:
+Each folder below is present at the repo root `https://aseracorp.github.io/snapraid-openwrt/`:
 
-```sh
-apk add --allow-untrusted --repository \
-  https://aseracorp.github.io/snapraid-openwrt/<arch> snapraid
 ```
+aarch64_cortex-a53   aarch64_cortex-a72   aarch64_cortex-a76
+aarch64_generic      arm_arm1176jzf-s_vfp  arm_arm926ej-s
+arm_cortex-a15_neon-vfpv4  arm_cortex-a5_vfpv4  arm_cortex-a7
+arm_cortex-a7_neon-vfpv4   arm_cortex-a7_vfpv4  arm_cortex-a8_vfpv3
+arm_cortex-a9        arm_cortex-a9_neon   arm_cortex-a9_vfpv3-d16
+arm_fa526            arm_xscale           armeb_xscale
+i386_pentium-mmx     i386_pentium4        loongarch64_generic
+mips64_mips64r2      mips64_octeonplus    mips64el_mips64r2
+mips_24kc            mips_mips32          mipsel_24kc
+mipsel_24kc_24kf     mipsel_74kc          mipsel_mips32
+powerpc64_e5500      powerpc_464fp        powerpc_8548
+riscv64_generic      x86_64
+```
+
+Each folder contains:
+- `snapraid-<ver>.apk`  – the package
+- `packages.adb`        – the apk package index (OpenWrt v3 / adb format)
+- `packages.adb.sig`    – index signature
+- `<keyid>.pub`         – the repo public key
 
 ---
 
@@ -84,7 +75,7 @@ apk add --allow-untrusted --repository \
 
 ```sh
 snapraid --version
-man snapraid          # full man page included
+man snapraid
 ```
 
 Start with the sample config:
@@ -98,11 +89,15 @@ snapraid status
 
 ---
 
-## OpenWrt ≤ 23.x (opkg)
+## If the package is unsigned
 
-Releases older than 25.x use **opkg**, which needs a `Packages` index, while
-this repo publishes the newer apk `.adb` index. For opkg devices either use
-OpenWrt 25.1+ (recommended) or build from source (below).
+If `apk` reports `UNTRUSTED signature`, the publishing signing key wasn't
+configured. Install with trust disabled:
+
+```sh
+apk add --allow-untrusted --repository \
+  https://aseracorp.github.io/snapraid-openwrt/<arch>/packages.adb snapraid
+```
 
 ---
 
@@ -121,11 +116,11 @@ make menuconfig       # select Utilities > snapraid
 make package/snapraid/compile
 ```
 
-Or drop the `Makefile` straight into an SDK and build:
+Or drop `package/snapraid/Makefile` into an SDK and build:
 
 ```sh
 mkdir -p package/snapraid
-cp package/snapraid/Makefile package/snapraid/   # from a checkout of this repo
+cp package/snapraid/Makefile package/snapraid/
 echo "CONFIG_PACKAGE_snapraid=y" >> .config
 make defconfig
 make package/snapraid/compile
@@ -137,8 +132,8 @@ make package/snapraid/compile
 
 `.github/workflows/build.yml`:
 - Runs **daily**, on **manual dispatch**, and on pushes to the package.
-- Builds SnapRAID with the matching **OpenWrt 25.12.5** SDK for each arch,
-  signs the index, and pushes the assembled repo to `gh-pages`.
+- Builds SnapRAID with the matching **OpenWrt 25.12.5** SDK for **every**
+  architecture, signs the index, and pushes the assembled repo to `gh-pages`.
 
 ### Setting up package signing
 
@@ -146,12 +141,11 @@ make package/snapraid/compile
 usign -G -s private.key -p keys/<KEYID>.pub   # create a keypair once
 base64 < private.key                          # value for the repo secret
 ```
-1. Commit `keys/<KEYID>.pub` to this repository.
+1. Commit `keys/<KEYID>.pub`.
 2. Add the base64 private key as the repo secret **`APK_SIGNING_KEY`**.
 3. Set `KEYID` in the workflow `env`.
 
-Until a signing key is configured, packages are published unsigned (see
-"if unsigned" above).
+Until a signing key is configured, packages are published unsigned.
 
 ---
 

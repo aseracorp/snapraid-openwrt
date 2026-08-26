@@ -68,22 +68,42 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - sdk_target: x86/64
-            id: x86_64
-          - sdk_target: x86/generic
-            id: x86_generic
-          - sdk_target: armsr/armv8
-            id: armsr_armv8
-          - sdk_target: armsr/armv7
-            id: armsr_armv7
-          - sdk_target: ramips/mt7621
-            id: ramips_mt7621
-          - sdk_target: mediatek/filogic
-            id: mediatek_filogic
-          - sdk_target: octeon/generic
-            id: octeon_generic
-          - sdk_target: mpc85xx/p1010
-            id: mpc85xx_p1010
+          - sdk_target: x86/64                # x86_64
+          - sdk_target: x86/generic           # i386_pentium4
+          - sdk_target: x86/legacy            # i386_pentium-mmx
+          - sdk_target: armsr/armv8           # aarch64_generic
+          - sdk_target: mediatek/filogic      # aarch64_cortex-a53
+          - sdk_target: bcm27xx/bcm2711       # aarch64_cortex-a72
+          - sdk_target: bcm27xx/bcm2712       # aarch64_cortex-a76
+          - sdk_target: bcm27xx/bcm2708       # arm_arm1176jzf-s_vfp
+          - sdk_target: at91/sam9x            # arm_arm926ej-s
+          - sdk_target: ipq806x/generic       # arm_cortex-a15_neon-vfpv4
+          - sdk_target: at91/sama5            # arm_cortex-a5_vfpv4
+          - sdk_target: mediatek/mt7629       # arm_cortex-a7
+          - sdk_target: ipq40xx/generic       # arm_cortex-a7_neon-vfpv4
+          - sdk_target: at91/sama7            # arm_cortex-a7_vfpv4
+          - sdk_target: sunxi/cortexa8        # arm_cortex-a8_vfpv3
+          - sdk_target: bcm53xx/generic       # arm_cortex-a9
+          - sdk_target: zynq/generic          # arm_cortex-a9_neon
+          - sdk_target: mvebu/cortexa9        # arm_cortex-a9_vfpv3-d16
+          - sdk_target: gemini/generic        # arm_fa526
+          - sdk_target: kirkwood/generic      # arm_xscale
+          - sdk_target: ixp4xx/generic        # armeb_xscale
+          - sdk_target: loongarch64/generic   # loongarch64_generic
+          - sdk_target: malta/be64            # mips64_mips64r2
+          - sdk_target: octeon/generic        # mips64_octeonplus
+          - sdk_target: malta/le64            # mips64el_mips64r2
+          - sdk_target: ath79/generic         # mips_24kc
+          - sdk_target: bmips/bcm6328         # mips_mips32
+          - sdk_target: ramips/mt7621         # mipsel_24kc
+          - sdk_target: pistachio/generic     # mipsel_24kc_24kf
+          - sdk_target: bcm47xx/mips74k       # mipsel_74kc
+          - sdk_target: bcm47xx/generic       # mipsel_mips32
+          - sdk_target: qoriq/generic         # powerpc64_e5500
+          - sdk_target: apm821xx/nand         # powerpc_464fp
+          - sdk_target: mpc85xx/p2020         # powerpc_8548
+          - sdk_target: d1/generic            # riscv64_generic
+
     steps:
       - name: Checkout feed
         uses: actions/checkout@v4
