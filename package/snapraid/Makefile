@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2026 aseracorp / madejackson
+# Copyright (C) 2026 aseracorp
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.

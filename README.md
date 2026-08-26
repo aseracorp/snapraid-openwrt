@@ -37,7 +37,7 @@ repository**.
 ## Add the repo & trust key (OpenWrt 25.1+, apk)
 
 The repository is served from the `gh-pages` branch as
-`https://madejackson.github.io/snapraid-openwrt/<arch>/`.
+`https://aseracorp.github.io/snapraid-openwrt/<arch>/`.
 
 **One-time setup** (replace `<arch>` with your architecture from the table):
 
@@ -45,10 +45,10 @@ The repository is served from the `gh-pages` branch as
 # 1. Install the repository verification public key (required for trust)
 mkdir -p /etc/apk/keys
 wget -O /etc/apk/keys/0e9e520c9ec791cf.pub \
-  https://raw.githubusercontent.com/madejackson/snapraid-openwrt/main/keys/0e9e520c9ec791cf.pub
+  https://raw.githubusercontent.com/aseracorp/snapraid-openwrt/main/keys/0e9e520c9ec791cf.pub
 
 # 2. Add the repository for your architecture, e.g. x86_64
-echo "https://madejackson.github.io/snapraid-openwrt/x86_64" >> /etc/apk/repositories
+echo "https://aseracorp.github.io/snapraid-openwrt/x86_64" >> /etc/apk/repositories
 
 # 3. Refresh the index and install
 apk update
@@ -74,7 +74,7 @@ configured for this release. Install with trust disabled:
 
 ```sh
 apk add --allow-untrusted --repository \
-  https://madejackson.github.io/snapraid-openwrt/<arch> snapraid
+  https://aseracorp.github.io/snapraid-openwrt/<arch> snapraid
 ```
 
 ---
@@ -110,7 +110,7 @@ OpenWrt 25.1+ (recommended) or build from source (below).
 Via `feeds.conf`:
 
 ```
-src-git snapraid https://github.com/madejackson/snapraid-openwrt.git
+src-git snapraid https://github.com/aseracorp/snapraid-openwrt.git
 ```
 
 ```sh
